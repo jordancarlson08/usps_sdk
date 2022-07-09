@@ -40,7 +40,7 @@ void main() {
     print(separator);
   });
   test("Domestic Rates Calculator", ()async{
-    String response = await uspsSdk.domesticRates(
+    DomesticRates response = await uspsSdk.domesticRates(
       uspsServiceType: USPSServiceType.priority, 
       zipOrigination: 32003, 
       zipDestination: 92688,
@@ -48,7 +48,18 @@ void main() {
       pounds: 2,
       ounces: 0,
     );
-    print(response);
+    print(response.rate);
+    for(USPSSpecialService uspsSpecialService in response.availableServices){
+      print("Available");
+      print(uspsSpecialService.available);
+      print("Price");
+      print(uspsSpecialService.price);
+      print("Service ID");
+      print(uspsSpecialService.serviceID);
+      print("Service Name");
+      print(uspsSpecialService.serviceName);
+      print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_");
+    }
     print(separator);
   });
   test("International Rates Calculator", ()async{

@@ -1,4 +1,7 @@
 ## 0.0.3
+- Domestic rates calculator is now statically typed
+
+## 0.0.3
 - Made Address Information functions statically typed
 
 ## 0.0.2

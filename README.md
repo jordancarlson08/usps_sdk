@@ -60,14 +60,26 @@ https://www.usps.com/business/web-tools-apis/rate-calculator-api.pdf
 The RateV4 API lets customers calculate the rate for domestic packages and envelopes given the weight and
 dimensions of the item
 ~~~dart
-String response = await uspsSdk.domesticRates(
-  uspsServiceType: USPSServiceType.priority,
-  zipOrigination: 32003,
+DomesticRates response = await uspsSdk.domesticRates(
+  uspsServiceType: USPSServiceType.priority, 
+  zipOrigination: 32003, 
   zipDestination: 92688,
   uspsContainer: USPSContainer.flatRateEnvelope,
   pounds: 2,
   ounces: 0,
 );
+print(response.rate);
+for(USPSSpecialService uspsSpecialService in response.availableServices){
+  print("Available");
+  print(uspsSpecialService.available);
+  print("Price");
+  print(uspsSpecialService.price);
+  print("Service ID");
+  print(uspsSpecialService.serviceID);
+  print("Service Name");
+  print(uspsSpecialService.serviceName);
+  print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_");
+}
 ~~~
 - International Rates(Still does not work on this package)
 The IntlRateV2 API lets customers calculate the rate for international packages and envelopes given the weight

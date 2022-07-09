@@ -72,8 +72,44 @@ class USPSAddress{
     );
   }
 }
+class USPSSpecialService{
+  USPSSpecialService({
+    required this.serviceID,
+    required this.serviceName,
+    required this.available,
+    required this.price,
+  });
+  final String serviceID;
+  final String serviceName;
+  final bool available;
+  final double price;
+}
 class DomesticRates{
-  
+  DomesticRates({
+    required this.rate,
+    required this.availableServices,
+  });
+  final double rate;
+  final List<USPSSpecialService> availableServices;
+  static DomesticRates parse(String xml){
+    XmlDocument document = XmlDocument.from(xml)!;
+    //Special services
+    List<XmlElement> specialServices = document.getElements("SpecialService")!;
+    List<USPSSpecialService> parsedSpecialServices = [];
+    for(XmlElement specialService in specialServices){
+      parsedSpecialServices.add(USPSSpecialService(
+        serviceID: specialService.getElement("ServiceID") == null ? "" : specialService.getElement("ServiceID")!.text ?? "",
+        serviceName: specialService.getElement("ServiceName") == null ? "" : specialService.getElement("ServiceName")!.text ?? "",
+        available: bool.fromEnvironment(specialService.getElement("Available") == null ? "" : specialService.getElement("Available")!.text ?? ""),
+        price: double.parse(specialService.getElement("Price") == null ? "" : specialService.getElement("Price")!.text ?? ""),
+      ));
+    }
+    return DomesticRates(
+      rate: double.parse(document.getElement("Rate")!.text!),
+      //TODO:
+      availableServices: parsedSpecialServices,
+    );
+  }
 }
 //Functions
 //---------------------------------------------------------------------------
@@ -265,7 +301,7 @@ class USPSSdk{
     _errorThrower(response);
     return USPSAddress.parse(response);
   }
-  Future<String> domesticRates({
+  Future<DomesticRates> domesticRates({
     required String uspsServiceType,
     required int zipOrigination,
     required int zipDestination,
@@ -335,7 +371,7 @@ class USPSSdk{
       },
     ).get();
     _errorThrower(response);
-    return response;
+    return DomesticRates.parse(response);
   }
   Future<String> internationalRates({
     required String uspsServiceType,
