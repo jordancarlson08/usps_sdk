@@ -1,6 +1,6 @@
 name: usps_sdk
 description: United States Postal Service unofficial Software Development Kit
-version: 0.0.4
+version: 0.0.5
 repository: https://github.com/LiveUser/usps_sdk
 environment:
   sdk: '>=2.13.0 <3.0.0'

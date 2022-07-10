@@ -85,15 +85,15 @@ for(USPSSpecialService uspsSpecialService in response.availableServices){
 The IntlRateV2 API lets customers calculate the rate for international packages and envelopes given the weight
 and dimensions of the item.
 ~~~dart
-String response = await uspsSdk.internationalRates(
-  uspsServiceType: USPSServiceType.priority,
-  zipOrigination: 32003,
-  zipDestination: 2046,
-  pounds: 2,
-  ounces: 0,
+InternationalRates response = await uspsSdk.internationalRates(
+  uspsServiceType: USPSServiceType.priority, 
+  zipOrigination: 32003, 
+  pounds: 2, 
+  ounces: 0, 
+  width: 6,
+  height: 6,
+  length: 6,
   country: "Australia",
-  acceptanceDateTime: DateTime.now(),
-  utc: -4,
 );
 ~~~
 ### eVS Label(Shipping Label)
