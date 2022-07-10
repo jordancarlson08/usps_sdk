@@ -64,17 +64,17 @@ void main() {
   });
   test("International Rates Calculator", ()async{
     try{
-      String response = await uspsSdk.internationalRates(
+      InternationalRates response = await uspsSdk.internationalRates(
         uspsServiceType: USPSServiceType.priority, 
         zipOrigination: 32003, 
-        zipDestination: 2046, 
         pounds: 2, 
         ounces: 0, 
+        width: 6,
+        height: 6,
+        length: 6,
         country: "Australia",
-        acceptanceDateTime: DateTime.now(),
-        utc: -4,
       );
-      print(response);
+      print(response.postage);
       print(separator);
     }catch(error){
       if(error is USPSError){

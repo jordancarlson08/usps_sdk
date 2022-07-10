@@ -106,8 +106,62 @@ class DomesticRates{
     }
     return DomesticRates(
       rate: double.parse(document.getElement("Rate")!.text!),
-      //TODO:
       availableServices: parsedSpecialServices,
+    );
+  }
+}
+//TODO: ExtraServices properties found in the response xml
+class USPSExtraService{
+  USPSExtraService({
+    required this.serviceID,
+    required this.serviceName,
+    required this.available,
+    required this.price,
+    required this.declaredValueRequired,
+  });
+  final int serviceID;
+  final String serviceName;
+  final bool available;
+  final double price;
+  final bool declaredValueRequired;
+}
+//TODO: International Rates
+class InternationalRates{
+  InternationalRates({
+    required this.prohibitions,
+    required this.additionalRestrictions,
+    required this.expressMail,
+    required this.restrictions,
+    required this.extraServices,
+    required this.postage,
+  });
+  final String prohibitions;
+  final String restrictions;
+  final String expressMail;
+  final String additionalRestrictions;
+  final double postage;
+  final List<USPSExtraService> extraServices;
+  static InternationalRates parse(String xml){
+    XmlDocument document = XmlDocument.from(xml)!;
+    //Special services
+    List<XmlElement> extraServices = document.getElements("ExtraService")!;
+    List<USPSExtraService> parsedExtraServices = [];
+    for(XmlElement extraService  in extraServices){
+      parsedExtraServices.add(USPSExtraService(
+        serviceID: int.parse(extraService.getElement("ServiceID") == null ? "" : extraService.getElement("ServiceID")!.text ?? ""), 
+        serviceName: extraService.getElement("ServiceName") == null ? "" : extraService.getElement("ServiceName")!.text ?? "", 
+        available: bool.fromEnvironment(extraService.getElement("Available") == null ? "" : extraService.getElement("Available")!.text ?? ""),
+        price: double.parse(extraService.getElement("Price") == null ? "" : extraService.getElement("Price")!.text ?? ""), 
+        declaredValueRequired: bool.fromEnvironment(extraService.getElement("DeclaredValueRequired") == null ? "" : extraService.getElement("DeclaredValueRequired")!.text ?? ""),
+      ));
+    }
+    return InternationalRates(
+      prohibitions: document.getElement("Prohibitions") == null ? "" : document.getElement("Prohibitions")!.text ?? "", 
+      additionalRestrictions: document.getElement("AdditionalRestrictions") == null ? "" : document.getElement("AdditionalRestrictions")!.text ?? "", 
+      expressMail: document.getElement("ExpressMail") == null ? "" : document.getElement("ExpressMail")!.text ?? "",
+      restrictions: document.getElement("Restrictions") == null ? "" : document.getElement("Restrictions")!.text ?? "", 
+      extraServices: parsedExtraServices,
+      postage: double.parse(document.getElement("Postage") == null ? "" : document.getElement("Postage")!.text ?? ""),
     );
   }
 }
@@ -116,10 +170,10 @@ class DomesticRates{
 void _errorThrower(String response){
   if(response.contains("<Error>")){
     XmlDocument xmlDocument = XmlDocument.from(response)!;
-    XmlElement errorTag = xmlDocument.getChild("Error")!;
-    String errorCode = errorTag.getChild("Number")!.text!;
-    String errorDescription = errorTag.getChild("Description")!.text!;
-    String errorSource = errorTag.getChild("Source")!.text!;
+    XmlElement errorTag = xmlDocument.getElement("Error")!;
+    String errorCode = errorTag.getElement("Number")!.text!;
+    String errorDescription = errorTag.getElement("Description")!.text!;
+    String errorSource = errorTag.getElement("Source")!.text!;
     throw USPSError(
       errorCode: errorCode, 
       description: errorDescription, 
@@ -373,10 +427,9 @@ class USPSSdk{
     _errorThrower(response);
     return DomesticRates.parse(response);
   }
-  Future<String> internationalRates({
+  Future<InternationalRates> internationalRates({
     required String uspsServiceType,
     required int zipOrigination,
-    required int zipDestination,
     required double pounds,
     required double ounces,
     required String country,
@@ -415,11 +468,7 @@ class USPSSdk{
     double length = 0,
     double value = 0,
     uspsContainer = "",
-    required DateTime acceptanceDateTime,
-    required int utc,
   })async{
-    //Convert date time to UTC
-    acceptanceDateTime = acceptanceDateTime.toUtc();
     String xmlBody = '''
     <IntlRateV2Request USERID= "$userID">
     <Revision>2</Revision>
@@ -441,8 +490,6 @@ class USPSSdk{
       <Girth>0</Girth>
       <OriginZip>$zipOrigination</OriginZip>
       <CommercialFlag>N</CommercialFlag>
-      <AcceptanceDateTime>${acceptanceDateTime.year}-${acceptanceDateTime.month}-${acceptanceDateTime.day}T${acceptanceDateTime.hour}:${acceptanceDateTime.minute}:${acceptanceDateTime.second}-$utc:${acceptanceDateTime.minute}</AcceptanceDateTime>
-      <DestinationPostalCode>$zipDestination</DestinationPostalCode>
     </Package>
     </IntlRateV2Request>
     ''';
@@ -455,7 +502,7 @@ class USPSSdk{
       },
     ).get();
     _errorThrower(response);
-    return response;
+    return InternationalRates.parse(response);
   }
   Future<String> trackAndConfirm({
     ///Must be alphanumeric characters.

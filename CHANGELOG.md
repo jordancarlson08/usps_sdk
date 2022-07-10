@@ -1,3 +1,6 @@
+## 0.0.4
+- International Rates Calculator is now statically typed
+
 ## 0.0.3
 - Domestic rates calculator is now statically typed
 
