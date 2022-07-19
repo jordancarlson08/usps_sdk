@@ -1,3 +1,6 @@
+## 0.0.6
+- Account Registration/Creation instructions added to the README.md
+
 ## 0.0.5
 - International Rates Calculator is now statically typed
 
