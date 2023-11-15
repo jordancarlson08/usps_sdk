@@ -1,13 +1,15 @@
 library usps_sdk;
 
-import 'package:sexy_api_client/sexy_api_client.dart';
+import 'package:http/http.dart' as http;
 import 'package:xml_parser/xml_parser.dart';
+
 //Variables and enums
 //---------------------------------------------------------------------------
-const String _uspsApiUrl = "https://secure.shippingapis.com";
+const String _uspsApiUrl = "secure.shippingapis.com";
+
 //USPS Types
 //---------------------------------------------------------------------------
-class USPSError{
+class USPSError {
   USPSError({
     required this.errorCode,
     required this.description,
@@ -17,7 +19,8 @@ class USPSError{
   final String description;
   final String source;
 }
-class USPSAddress{
+
+class USPSAddress {
   USPSAddress({
     required this.firmName,
     required this.address1,
@@ -28,10 +31,13 @@ class USPSAddress{
     required this.zip5,
     this.urbanization = "",
   });
+
   ///Firm Name
   final String firmName;
+
   ///Delivery Address in the destination address. May contain secondary unit designator, such as APT or SUITE, for Accountable mail.)
   final String address1;
+
   ///Delivery Address in the
   ///destination address.
   ///Required for all mail and
@@ -43,36 +49,56 @@ class USPSAddress{
   final String address2;
   final String city;
   final String state;
+
   ///Destination 5-digit ZIP
   ///Code. Numeric values (0-
   ///9) only. If International, all
   ///zeroes.
   final String zip5;
+
   ///Destination ZIP+4 Numeric
   ///values (0-9) only. If
   ///International, all zeroes.
   ///Default to spaces if not
   ///available.
   final String zip4;
+
   ///Urbanization.
   ///For Puerto Rico addresses only.
   final String urbanization;
   //Parse request response
-  static USPSAddress parse(String xml){
+  static USPSAddress parse(String xml) {
     XmlDocument xmlDocument = XmlDocument.from(xml)!;
     return USPSAddress(
-      address1: xmlDocument.getElement("Address1") == null ? "" : xmlDocument.getElement("Address1")!.text ?? "", 
-      address2: xmlDocument.getElement("Address2") == null ? "" : xmlDocument.getElement("Address2")!.text ?? "", 
-      city: xmlDocument.getElement("City") == null ? "" : xmlDocument.getElement("City")!.text ?? "", 
-      state: xmlDocument.getElement("State") == null ? "" : xmlDocument.getElement("State")!.text ?? "", 
-      zip4: xmlDocument.getElement("Zip4") == null ? "" : xmlDocument.getElement("Zip4")!.text ?? "", 
-      zip5: xmlDocument.getElement("Zip5") == null ? "" : xmlDocument.getElement("Zip5")!.text ?? "",
-      firmName: xmlDocument.getElement("FirmName") == null ? "" : xmlDocument.getElement("FirmName")!.text ?? "",
-      urbanization: xmlDocument.getElement("Urbanization") == null ? "" : xmlDocument.getElement("Urbanization")!.text ?? "",
+      address1: xmlDocument.getElement("Address1") == null
+          ? ""
+          : xmlDocument.getElement("Address1")!.text ?? "",
+      address2: xmlDocument.getElement("Address2") == null
+          ? ""
+          : xmlDocument.getElement("Address2")!.text ?? "",
+      city: xmlDocument.getElement("City") == null
+          ? ""
+          : xmlDocument.getElement("City")!.text ?? "",
+      state: xmlDocument.getElement("State") == null
+          ? ""
+          : xmlDocument.getElement("State")!.text ?? "",
+      zip4: xmlDocument.getElement("Zip4") == null
+          ? ""
+          : xmlDocument.getElement("Zip4")!.text ?? "",
+      zip5: xmlDocument.getElement("Zip5") == null
+          ? ""
+          : xmlDocument.getElement("Zip5")!.text ?? "",
+      firmName: xmlDocument.getElement("FirmName") == null
+          ? ""
+          : xmlDocument.getElement("FirmName")!.text ?? "",
+      urbanization: xmlDocument.getElement("Urbanization") == null
+          ? ""
+          : xmlDocument.getElement("Urbanization")!.text ?? "",
     );
   }
 }
-class USPSSpecialService{
+
+class USPSSpecialService {
   USPSSpecialService({
     required this.serviceID,
     required this.serviceName,
@@ -84,24 +110,34 @@ class USPSSpecialService{
   final bool available;
   final double price;
 }
-class DomesticRates{
+
+class DomesticRates {
   DomesticRates({
     required this.rate,
     required this.availableServices,
   });
   final double rate;
   final List<USPSSpecialService> availableServices;
-  static DomesticRates parse(String xml){
+  static DomesticRates parse(String xml) {
     XmlDocument document = XmlDocument.from(xml)!;
     //Special services
     List<XmlElement> specialServices = document.getElements("SpecialService")!;
     List<USPSSpecialService> parsedSpecialServices = [];
-    for(XmlElement specialService in specialServices){
+    for (XmlElement specialService in specialServices) {
       parsedSpecialServices.add(USPSSpecialService(
-        serviceID: specialService.getElement("ServiceID") == null ? "" : specialService.getElement("ServiceID")!.text ?? "",
-        serviceName: specialService.getElement("ServiceName") == null ? "" : specialService.getElement("ServiceName")!.text ?? "",
-        available: bool.fromEnvironment(specialService.getElement("Available") == null ? "" : specialService.getElement("Available")!.text ?? ""),
-        price: double.parse(specialService.getElement("Price") == null ? "" : specialService.getElement("Price")!.text ?? ""),
+        serviceID: specialService.getElement("ServiceID") == null
+            ? ""
+            : specialService.getElement("ServiceID")!.text ?? "",
+        serviceName: specialService.getElement("ServiceName") == null
+            ? ""
+            : specialService.getElement("ServiceName")!.text ?? "",
+        available: bool.fromEnvironment(
+            specialService.getElement("Available") == null
+                ? ""
+                : specialService.getElement("Available")!.text ?? ""),
+        price: double.parse(specialService.getElement("Price") == null
+            ? ""
+            : specialService.getElement("Price")!.text ?? ""),
       ));
     }
     return DomesticRates(
@@ -110,8 +146,9 @@ class DomesticRates{
     );
   }
 }
+
 //TODO: ExtraServices properties found in the response xml
-class USPSExtraService{
+class USPSExtraService {
   USPSExtraService({
     required this.serviceID,
     required this.serviceName,
@@ -125,8 +162,9 @@ class USPSExtraService{
   final double price;
   final bool declaredValueRequired;
 }
+
 //TODO: International Rates
-class InternationalRates{
+class InternationalRates {
   InternationalRates({
     required this.prohibitions,
     required this.additionalRestrictions,
@@ -141,47 +179,72 @@ class InternationalRates{
   final String additionalRestrictions;
   final double postage;
   final List<USPSExtraService> extraServices;
-  static InternationalRates parse(String xml){
+  static InternationalRates parse(String xml) {
     XmlDocument document = XmlDocument.from(xml)!;
     //Special services
     List<XmlElement> extraServices = document.getElements("ExtraService")!;
     List<USPSExtraService> parsedExtraServices = [];
-    for(XmlElement extraService  in extraServices){
+    for (XmlElement extraService in extraServices) {
       parsedExtraServices.add(USPSExtraService(
-        serviceID: int.parse(extraService.getElement("ServiceID") == null ? "" : extraService.getElement("ServiceID")!.text ?? ""), 
-        serviceName: extraService.getElement("ServiceName") == null ? "" : extraService.getElement("ServiceName")!.text ?? "", 
-        available: bool.fromEnvironment(extraService.getElement("Available") == null ? "" : extraService.getElement("Available")!.text ?? ""),
-        price: double.parse(extraService.getElement("Price") == null ? "" : extraService.getElement("Price")!.text ?? ""), 
-        declaredValueRequired: bool.fromEnvironment(extraService.getElement("DeclaredValueRequired") == null ? "" : extraService.getElement("DeclaredValueRequired")!.text ?? ""),
+        serviceID: int.parse(extraService.getElement("ServiceID") == null
+            ? ""
+            : extraService.getElement("ServiceID")!.text ?? ""),
+        serviceName: extraService.getElement("ServiceName") == null
+            ? ""
+            : extraService.getElement("ServiceName")!.text ?? "",
+        available: bool.fromEnvironment(
+            extraService.getElement("Available") == null
+                ? ""
+                : extraService.getElement("Available")!.text ?? ""),
+        price: double.parse(extraService.getElement("Price") == null
+            ? ""
+            : extraService.getElement("Price")!.text ?? ""),
+        declaredValueRequired: bool.fromEnvironment(
+            extraService.getElement("DeclaredValueRequired") == null
+                ? ""
+                : extraService.getElement("DeclaredValueRequired")!.text ?? ""),
       ));
     }
     return InternationalRates(
-      prohibitions: document.getElement("Prohibitions") == null ? "" : document.getElement("Prohibitions")!.text ?? "", 
-      additionalRestrictions: document.getElement("AdditionalRestrictions") == null ? "" : document.getElement("AdditionalRestrictions")!.text ?? "", 
-      expressMail: document.getElement("ExpressMail") == null ? "" : document.getElement("ExpressMail")!.text ?? "",
-      restrictions: document.getElement("Restrictions") == null ? "" : document.getElement("Restrictions")!.text ?? "", 
+      prohibitions: document.getElement("Prohibitions") == null
+          ? ""
+          : document.getElement("Prohibitions")!.text ?? "",
+      additionalRestrictions:
+          document.getElement("AdditionalRestrictions") == null
+              ? ""
+              : document.getElement("AdditionalRestrictions")!.text ?? "",
+      expressMail: document.getElement("ExpressMail") == null
+          ? ""
+          : document.getElement("ExpressMail")!.text ?? "",
+      restrictions: document.getElement("Restrictions") == null
+          ? ""
+          : document.getElement("Restrictions")!.text ?? "",
       extraServices: parsedExtraServices,
-      postage: double.parse(document.getElement("Postage") == null ? "" : document.getElement("Postage")!.text ?? ""),
+      postage: double.parse(document.getElement("Postage") == null
+          ? ""
+          : document.getElement("Postage")!.text ?? ""),
     );
   }
 }
+
 //Functions
 //---------------------------------------------------------------------------
-void _errorThrower(String response){
-  if(response.contains("<Error>")){
+void _errorThrower(String response) {
+  if (response.contains("<Error>")) {
     XmlDocument xmlDocument = XmlDocument.from(response)!;
     XmlElement errorTag = xmlDocument.getElement("Error")!;
     String errorCode = errorTag.getElement("Number")!.text!;
     String errorDescription = errorTag.getElement("Description")!.text!;
     String errorSource = errorTag.getElement("Source")!.text!;
     throw USPSError(
-      errorCode: errorCode, 
-      description: errorDescription, 
+      errorCode: errorCode,
+      description: errorDescription,
       source: errorSource,
     );
   }
 }
-class USPSServiceType{
+
+class USPSServiceType {
   static String firstClassCommercial = "";
   static String firstClass = "First Class";
   static String firstClassHFPCommercial = "First Class HFP Commercial";
@@ -194,12 +257,15 @@ class USPSServiceType{
   static String priorityCPP = "Priority CPP";
   static String priorityHFPCommercial = "Priority HFP Commercial";
   static String priorityMailExpress = "Priority Mail Express";
-  static String priorityMailExpressCommercial = "Priority Mail Express Commercial";
+  static String priorityMailExpressCommercial =
+      "Priority Mail Express Commercial";
   static String priorityMailExpressCpp = "Priority Mail Express CPP";
   static String priorityMailExpressSh = "Priority Mail Express Sh";
-  static String priorityMailExpressShCommercial = "Priority Mail Express Sh Commercial";
+  static String priorityMailExpressShCommercial =
+      "Priority Mail Express Sh Commercial";
   static String priorityMailExpressHFP = "Priority Mail Express HFP";
-  static String priorityMailExpressHFPCommercial = "Priority Mail Express HFP Commercial";
+  static String priorityMailExpressHFPCommercial =
+      "Priority Mail Express HFP Commercial";
   static String priorityMailExpressHFPCPP = "Priority Mail Express HFP CPP";
   static String priorityMailCubic = "Priority Mail Cubic";
   static String priorityMailCubicReturns = "Priority Mail Cubic Returns";
@@ -214,7 +280,8 @@ class USPSServiceType{
   static String bpm = "BPM";
   static String connectLocal = "Connect Local";
 }
-class USPSContainer{
+
+class USPSContainer {
   static String variable = "VARIABLE";
   static String flatRateEnvelope = "FLAT RATE ENVELOPE";
   static String paddedFlatRateEnvelope = "PADDED FLAT RATE ENVELOPE";
@@ -233,16 +300,17 @@ class USPSContainer{
   static String lgFlatRateBag = "LG FLAT RATE BAG";
   static String flatRateBox = "FLAT RATE BOX";
 }
+
 //USPS SDK
 //---------------------------------------------------------------------------
-class USPSSdk{
+class USPSSdk {
   USPSSdk({
     required this.userID,
   });
   final String userID;
   Future<USPSAddress> validate({
     required USPSAddress address,
-  })async{
+  }) async {
     String xmlBody = '''
 <?xml version="1.0" ?>
 <AddressValidateRequest USERID="$userID">
@@ -259,23 +327,39 @@ class USPSSdk{
   </Address>
 </AddressValidateRequest>
 ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "Verify",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return USPSAddress.parse(response);
+
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "Verify",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return USPSAddress.parse(response.body);
+
+    // String response = await SexyAPI(
+    //   url: _uspsApiUrl,
+    //   path: "/ShippingAPI.dll",
+    //   parameters: {
+    //     "API": "Verify",
+    //     "XML": xmlBody,
+    //   },
+    // ).get();
+    // _errorThrower(response);
+    // return USPSAddress.parse(response);
   }
+
   //ZIP Code Lookup API
   Future<USPSAddress> zipCodeLookupAPI({
     ///Firm Name
     String firmName = "",
+
     ///Delivery Address in the destination address. May contain secondary unit designator, such as APT or SUITE, for Accountable mail.)
     String address1 = "",
+
     ///Delivery Address in the
     ///destination address.
     ///Required for all mail and
@@ -285,27 +369,32 @@ class USPSSdk{
     ///provided as an alternative
     ///in the Detail 1 Record.
     required String address2,
+
     ///City name of the
-    ///destination address. 
+    ///destination address.
     String city = "",
+
     ///Two-character state code
     ///of the destination address
     String state = "",
+
     ///Urbanization.
     ///For Puerto Rico addresses only.
     String urbanization = "",
+
     ///Destination 5-digit ZIP
     ///Code. Numeric values (0-
     ///9) only. If International, all
     ///zeroes.
     String zip5 = "",
+
     ///Destination ZIP+4 Numeric
     ///values (0-9) only. If
     ///International, all zeroes.
     ///Default to spaces if not
     ///available.
     String zip4 = "",
-  })async{
+  }) async {
     String xmlBody = '''
     <?xml version="1.0" ?>
     <ZipCodeLookupRequest USERID="$userID">
@@ -322,21 +411,24 @@ class USPSSdk{
       </Address>
     </ZipCodeLookupRequest>
     ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "ZipCodeLookup",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return USPSAddress.parse(response);
+
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "ZipCodeLookup",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return USPSAddress.parse(response.body);
   }
+
   //CityStateLookup API
   Future<USPSAddress> cityStateLookup({
     required int zip5,
-  })async{
+  }) async {
     String xmlBody = '''
     <CityStateLookupRequest USERID="$userID">
       <ZipCode ID='0'>
@@ -344,23 +436,27 @@ class USPSSdk{
       </ZipCode>
     </CityStateLookupRequest>
     ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "CityStateLookup",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return USPSAddress.parse(response);
+
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "CityStateLookup",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return USPSAddress.parse(response.body);
   }
+
   Future<DomesticRates> domesticRates({
     required String uspsServiceType,
     required int zipOrigination,
     required int zipDestination,
     required double pounds,
     required double ounces,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -372,6 +468,7 @@ class USPSSdk{
     ///the Girth dimension must be left blank as this
     ///dimension is to only be used for nonrectangular packages.
     double width = 0,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -383,6 +480,7 @@ class USPSSdk{
     ///the Girth dimension must be left blank as this
     ///dimension is to only be used for nonrectangular packages.
     double height = 0,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -396,7 +494,7 @@ class USPSSdk{
     double length = 0,
     double value = 0,
     uspsContainer = "",
-  })async{
+  }) async {
     String xmlBody = '''
     <RateV4Request USERID="$userID">
     <Revision>2</Revision>
@@ -416,23 +514,27 @@ class USPSSdk{
       </Package>
     </RateV4Request>
     ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "RateV4",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return DomesticRates.parse(response);
+
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "RateV4",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return DomesticRates.parse(response.body);
   }
+
   Future<InternationalRates> internationalRates({
     required String uspsServiceType,
     required int zipOrigination,
     required double pounds,
     required double ounces,
     required String country,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -444,6 +546,7 @@ class USPSSdk{
     ///the Girth dimension must be left blank as this
     ///dimension is to only be used for nonrectangular packages.
     double width = 0,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -455,6 +558,7 @@ class USPSSdk{
     ///the Girth dimension must be left blank as this
     ///dimension is to only be used for nonrectangular packages.
     double height = 0,
+
     ///Value must be numeric. Units are inches. If partial
     ///dimensions are provided, an error response will
     ///return. Length, Width, Height are required for
@@ -468,7 +572,7 @@ class USPSSdk{
     double length = 0,
     double value = 0,
     uspsContainer = "",
-  })async{
+  }) async {
     String xmlBody = '''
     <IntlRateV2Request USERID= "$userID">
     <Revision>2</Revision>
@@ -493,35 +597,38 @@ class USPSSdk{
     </Package>
     </IntlRateV2Request>
     ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "IntlRateV2",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return InternationalRates.parse(response);
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "IntlRateV2",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return InternationalRates.parse(response.body);
   }
+
   Future<String> trackAndConfirm({
     ///Must be alphanumeric characters.
     required String trackID,
-  })async{
+  }) async {
     String xmlBody = '''
     <TrackRequest USERID="$userID">
       <TrackID ID="$trackID"></TrackID>
     </TrackRequest>
     ''';
-    String response  = await SexyAPI(
-      url: _uspsApiUrl,
-      path: "/ShippingAPI.dll",
-      parameters: {
-        "API" : "TrackV2",
-        "XML" : xmlBody,
-      },
-    ).get();
-    _errorThrower(response);
-    return response;
+    final url = Uri.https(_uspsApiUrl, "/ShippingAPI.dll", {
+      "API": "TrackV2",
+      "XML": xmlBody,
+    });
+    final response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    _errorThrower(response.body);
+    return response.body;
   }
 }

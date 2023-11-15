@@ -1,12 +1,13 @@
 import 'package:usps_sdk/usps_sdk.dart';
 import 'package:test/test.dart';
-//TODO: Delete user ID before publishing
+
 const String userID = "";
 
 void main() {
-  const String separator = "|------------------------------------------------------------------------------------|";
+  const String separator =
+      "|------------------------------------------------------------------------------------|";
   USPSSdk uspsSdk = USPSSdk(userID: userID);
-  test("Validate adress", ()async{
+  test("Validate adress", () async {
     USPSAddress response = await uspsSdk.validate(
       address: USPSAddress(
         firmName: "",
@@ -21,7 +22,7 @@ void main() {
     print(response.state);
     print(separator);
   });
-  test("ZIP Code Lookup API", ()async{
+  test("ZIP Code Lookup API", () async {
     USPSAddress response = await uspsSdk.zipCodeLookupAPI(
       address1: "SUITE K",
       address2: "29851 Aventura",
@@ -31,7 +32,7 @@ void main() {
     print(response.zip5);
     print(separator);
   });
-  test("CityStateLookup API", ()async{
+  test("CityStateLookup API", () async {
     USPSAddress response = await uspsSdk.cityStateLookup(
       zip5: 92688,
     );
@@ -39,17 +40,17 @@ void main() {
     print(response.state);
     print(separator);
   });
-  test("Domestic Rates Calculator", ()async{
+  test("Domestic Rates Calculator", () async {
     DomesticRates response = await uspsSdk.domesticRates(
-      uspsServiceType: USPSServiceType.priority, 
-      zipOrigination: 32003, 
+      uspsServiceType: USPSServiceType.priority,
+      zipOrigination: 32003,
       zipDestination: 92688,
       uspsContainer: USPSContainer.flatRateEnvelope,
       pounds: 2,
       ounces: 0,
     );
     print(response.rate);
-    for(USPSSpecialService uspsSpecialService in response.availableServices){
+    for (USPSSpecialService uspsSpecialService in response.availableServices) {
       print("Available");
       print(uspsSpecialService.available);
       print("Price");
@@ -62,13 +63,13 @@ void main() {
     }
     print(separator);
   });
-  test("International Rates Calculator", ()async{
-    try{
+  test("International Rates Calculator", () async {
+    try {
       InternationalRates response = await uspsSdk.internationalRates(
-        uspsServiceType: USPSServiceType.priority, 
-        zipOrigination: 32003, 
-        pounds: 2, 
-        ounces: 0, 
+        uspsServiceType: USPSServiceType.priority,
+        zipOrigination: 32003,
+        pounds: 2,
+        ounces: 0,
         width: 6,
         height: 6,
         length: 6,
@@ -76,8 +77,8 @@ void main() {
       );
       print(response.postage);
       print(separator);
-    }catch(error){
-      if(error is USPSError){
+    } catch (error) {
+      if (error is USPSError) {
         print("--------------------------------------------------");
         print("Error code: ${error.errorCode}");
         print("Error description ${error.description}");
@@ -86,15 +87,15 @@ void main() {
       }
     }
   });
-  test("Tracking", ()async{
-    try{
+  test("Tracking", () async {
+    try {
       String response = await uspsSdk.trackAndConfirm(
         trackID: "9305589674000215488420",
       );
       print(response);
       print(separator);
-    }catch(error){
-      if(error is USPSError){
+    } catch (error) {
+      if (error is USPSError) {
         print("--------------------------------------------------");
         print("Error code: ${error.errorCode}");
         print("Error description ${error.description}");

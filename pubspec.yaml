@@ -2,12 +2,16 @@ name: usps_sdk
 description: United States Postal Service unofficial Software Development Kit
 version: 0.0.6
 repository: https://github.com/LiveUser/usps_sdk
+
 environment:
   sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
-  sexy_api_client: ^0.0.6+6
-  xml_parser: ^1.0.0
+  http: ^1.1.0
+  xml_parser:
+    git:
+      url: https://github.com/jordancarlson08/xml_parser
+      ref: master # branch name
 
 dev_dependencies:
   lints: ^2.0.0
